@@ -30,8 +30,8 @@ public class ChatService {
     private final AIProperties aiProperties;
     private final ChatModel chatModel;
 
-    private static final int DEFAULT_MAX_CHUNKS = 2;
-    private static final double DEFAULT_SIMILARITY_THRESHOLD = 0.3;
+    private static final int DEFAULT_MAX_CHUNKS = 5;
+    private static final double DEFAULT_SIMILARITY_THRESHOLD = 0.1;
 
     /**
      * Process chat request with RAG pipeline

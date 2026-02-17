@@ -10,8 +10,8 @@ const Chat = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
-  const [maxResults, setMaxResults] = useState(3);
-  const [similarityThreshold, setSimilarityThreshold] = useState(0.2);
+  const [maxResults, setMaxResults] = useState(5);
+  const [similarityThreshold, setSimilarityThreshold] = useState(0.1);
   const [showSettings, setShowSettings] = useState(false);
 
   const messagesEndRef = useRef(null);
@@ -108,21 +108,21 @@ const Chat = () => {
     <div className="chat-container">
       <div className="chat-header">
         <div className="header-left">
-          <h2>RAG Chatbot</h2>
+          <h2>🤖 RAG Chatbot</h2>
           <span className="username">@{user?.username}</span>
         </div>
         <div className="header-right">
           <button onClick={() => navigate('/upload')} className="btn btn-secondary">
-            Upload Documents
+            📁 Upload Documents
           </button>
           <button onClick={() => setShowSettings(!showSettings)} className="btn btn-secondary">
-            Settings
+            ⚙️ Settings
           </button>
           <button onClick={handleClearSession} className="btn btn-secondary">
-            Clear Chat
+            🗑️ Clear Chat
           </button>
           <button onClick={handleLogout} className="btn btn-secondary">
-            Logout
+            🚪 Logout
           </button>
         </div>
       </div>
@@ -160,9 +160,9 @@ const Chat = () => {
       <div className="messages-container">
         {messages.length === 0 ? (
           <div className="empty-state">
-            <h3>Welcome to RAG Chatbot!</h3>
-            <p>Ask me anything about your uploaded documents.</p>
-            <p>Upload documents to get started.</p>
+            <h3>👋 Welcome to RAG Chatbot!</h3>
+            <p>💬 Ask me anything about your uploaded documents.</p>
+            <p>📄 Upload documents to get started.</p>
           </div>
         ) : (
           messages.map((message, index) => (
@@ -198,7 +198,7 @@ const Chat = () => {
             className="btn btn-primary send-button"
             disabled={loading || !inputMessage.trim()}
           >
-            Send
+            {loading ? '⏳ Sending...' : '🚀 Send'}
           </button>
         </form>
       </div>

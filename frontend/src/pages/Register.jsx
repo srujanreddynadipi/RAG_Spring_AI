@@ -74,8 +74,8 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>RAG Chatbot</h1>
-          <h2>Register</h2>
+          <h1>🤖 RAG Chatbot</h1>
+          <h2>✨ Create Account</h2>
         </div>
 
         {error && (
@@ -139,7 +139,7 @@ const Register = () => {
             className="btn btn-primary"
             disabled={loading}
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? '⏳ Creating account...' : '🚀 Create Account'}
           </button>
         </form>
 

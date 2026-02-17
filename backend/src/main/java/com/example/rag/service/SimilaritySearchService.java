@@ -21,8 +21,8 @@ public class SimilaritySearchService {
     private final EmbeddingService embeddingService;
 
     private static final int DEFAULT_MAX_RESULTS = 5;
-    private static final double DEFAULT_SIMILARITY_THRESHOLD = 0.2;
-    private static final double FALLBACK_SIMILARITY_THRESHOLD = 0.1;
+    private static final double DEFAULT_SIMILARITY_THRESHOLD = 0.1;
+    private static final double FALLBACK_SIMILARITY_THRESHOLD = 0.05;
 
     /**
      * Find similar chunks for a query

@@ -145,14 +145,14 @@ public class DocumentIngestionService {
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
                 throw new IOException("Invalid URL format. Must start with http:// or https://");
             }
-            
+
             // Fetch and parse web content
             String content = fetchWebContent(url);
-            
+
             if (content == null || content.trim().isEmpty()) {
                 throw new IOException("No content could be extracted from the URL");
             }
-            
+
             log.info("Successfully fetched {} characters from URL", content.length());
 
             // Create document entity
@@ -339,71 +339,148 @@ public class DocumentIngestionService {
     }
 
     /**
-     * Fetch content from web URL
+     * Fetch content from web URL with multiple extraction strategies
      */
     private String fetchWebContent(String url) throws IOException {
         log.info("Fetching content from URL: {}", url);
-        
-        org.jsoup.nodes.Document doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                .timeout(15000)
-                .followRedirects(true)
-                .get();
+
+        org.jsoup.nodes.Document doc;
+        try {
+            doc = Jsoup.connect(url)
+                    .userAgent(
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .timeout(20000)
+                    .followRedirects(true)
+                    .ignoreHttpErrors(false)
+                    .ignoreContentType(false)
+                    .get();
+        } catch (IOException e) {
+            log.error("Failed to fetch URL: {}", e.getMessage());
+            throw new IOException("Failed to connect to URL: " + e.getMessage(), e);
+        }
 
         // Remove unwanted elements
-        doc.select("script, style, nav, footer, header, aside, .ad, .advertisement, iframe, noscript").remove();
+        doc.select("script, style, noscript, meta, iframe, .navigation, .nav, .sidebar, .related, .comments, .ads")
+                .remove();
+        doc.select("nav, footer, header, aside").remove();
 
-        // Try to extract main content intelligently
+        // Strategy 1: Extract from common content selectors
         String content = extractMainContent(doc);
-        
-        if (content == null || content.trim().length() < 100) {
-            // Fallback: get all text from body
+        log.info("Strategy 1 (main content) extracted: {} characters", content.length());
+
+        // Strategy 2: Get all paragraphs
+        if (content.length() < 200) {
+            content = doc.select("p, h1, h2, h3, h4, h5, h6, li, td")
+                    .stream()
+                    .map(e -> e.text())
+                    .filter(text -> !text.trim().isEmpty())
+                    .reduce((a, b) -> a + " " + b)
+                    .orElse("");
+            log.info("Strategy 2 (paragraphs) extracted: {} characters", content.length());
+        }
+
+        // Strategy 3: Get all divs with significant content
+        if (content.length() < 200) {
+            content = doc.select("div")
+                    .stream()
+                    .map(e -> e.text())
+                    .filter(text -> text.length() > 50) // Only divs with substantial content
+                    .reduce((a, b) -> a + " " + b)
+                    .orElse("");
+            log.info("Strategy 3 (divs) extracted: {} characters", content.length());
+        }
+
+        // Strategy 4: Get everything from body as last resort
+        if (content.length() < 200) {
             content = doc.body().text();
+            log.info("Strategy 4 (full body) extracted: {} characters", content.length());
         }
-        
-        // Clean up extra whitespace
-        content = content.replaceAll("\\s+", " ").trim();
-        
-        log.info("Extracted {} characters from URL", content.length());
-        
-        if (content.length() < 50) {
-            throw new IOException("Insufficient content extracted from URL. Only got " + content.length() + " characters.");
+
+        // Clean up extra whitespace and normalize
+        content = content.replaceAll("\\s+", " ")
+                .replaceAll("\\s+([.,!?;:])", "$1") // Fix spacing before punctuation
+                .trim();
+
+        log.info("Final extracted content: {} characters", content.length());
+        log.debug("Content preview: {}", content.length() > 100 ? content.substring(0, 100) + "..." : content);
+
+        if (content.length() < 30) {
+            throw new IOException(
+                    "Insufficient content extracted from URL. Only got " + content.length() + " characters. " +
+                            "The page may be JavaScript-rendered or contain minimal text content.");
         }
-        
+
         return content;
     }
-    
+
     /**
-     * Intelligently extract main content from HTML document
+     * Intelligently extract main content from HTML document with fallbacks
      */
     private String extractMainContent(org.jsoup.nodes.Document doc) {
-        // Try common content selectors in order of priority
-        String[] selectors = {
-            "article",
-            "main",
-            "[role='main']",
-            ".content",
-            ".main-content",
-            "#content",
-            "#main-content",
-            ".post-content",
-            ".entry-content",
-            ".article-content"
+        // Priority 1: Look for semantic content elements
+        String[] semanticSelectors = {
+                "article > p",
+                "main > p",
+                "[role='main'] > p",
+                ".content > p",
+                ".main-content > p",
+                "#content > p",
+                ".post-content > p",
+                ".entry-content > p"
         };
-        
-        for (String selector : selectors) {
+
+        for (String selector : semanticSelectors) {
+            String text = doc.select(selector).stream()
+                    .map(e -> e.text())
+                    .filter(t -> !t.trim().isEmpty())
+                    .reduce((a, b) -> a + " " + b)
+                    .orElse("");
+            if (text.length() > 150) {
+                log.debug("Extracted content using semantic selector: {}", selector);
+                return text;
+            }
+        }
+
+        // Priority 2: Look for container elements
+        String[] containerSelectors = {
+                "article",
+                "main",
+                "[role='main']",
+                ".content",
+                ".main-content",
+                "#content",
+                "#main-content",
+                ".post-content",
+                ".entry-content",
+                ".article-body"
+        };
+
+        for (String selector : containerSelectors) {
             org.jsoup.select.Elements elements = doc.select(selector);
             if (!elements.isEmpty()) {
                 String text = elements.text();
-                if (text.length() > 100) {
-                    log.debug("Extracted content using selector: {}", selector);
+                if (text.length() > 150) {
+                    log.debug("Extracted content using container selector: {}", selector);
                     return text;
                 }
             }
         }
-        
-        // If no main content found, return all body text
-        return doc.body().text();
+
+        // Priority 3: Get the largest text block
+        String largestBlock = doc.select("div, section, article")
+                .stream()
+                .map(e -> e.text())
+                .filter(text -> text.length() > 200)
+                .reduce((a, b) -> a.length() > b.length() ? a : b)
+                .orElse("");
+
+        if (largestBlock.length() > 150) {
+            log.debug("Extracted content using largest block");
+            return largestBlock;
+        }
+
+        // If no main content found, return empty (strategies will use fallback)
+        return "";
     }
 
     /**
@@ -459,7 +536,7 @@ public class DocumentIngestionService {
                     .timeout(10000)
                     .get()
                     .title();
-            
+
             if (title != null && !title.trim().isEmpty()) {
                 // Limit title length
                 return title.length() > 100 ? title.substring(0, 100) + "..." : title;
@@ -467,20 +544,20 @@ public class DocumentIngestionService {
         } catch (IOException e) {
             log.debug("Could not fetch title from URL, using fallback: {}", e.getMessage());
         }
-        
+
         // Fallback: extract domain or path
         try {
             java.net.URL urlObj = new java.net.URL(url);
             String host = urlObj.getHost();
             String path = urlObj.getPath();
-            
+
             if (path != null && path.length() > 1) {
                 String lastSegment = path.substring(path.lastIndexOf('/') + 1);
                 if (!lastSegment.isEmpty()) {
                     return lastSegment.replaceAll("[^a-zA-Z0-9-_.]", "_");
                 }
             }
-            
+
             return host.replaceAll("^www\\.", "");
         } catch (Exception e) {
             // Final fallback

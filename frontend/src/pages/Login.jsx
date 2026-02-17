@@ -38,8 +38,8 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>RAG Chatbot</h1>
-          <h2>Login</h2>
+          <h1>🤖 RAG Chatbot</h1>
+          <h2>🔑 Login</h2>
         </div>
 
         {error && (
@@ -79,7 +79,7 @@ const Login = () => {
             className="btn btn-primary"
             disabled={loading}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? '⏳ Logging in...' : '🚀 Login'}
           </button>
         </form>
 

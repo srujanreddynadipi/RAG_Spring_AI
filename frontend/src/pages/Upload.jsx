@@ -118,13 +118,13 @@ const Upload = () => {
   return (
     <div className="upload-container">
       <div className="upload-header">
-        <h2>Document Management</h2>
+        <h2>📂 Document Management</h2>
         <div className="header-actions">
           <button onClick={() => navigate('/chat')} className="btn btn-secondary">
-            Back to Chat
+            ← Back to Chat
           </button>
           <button onClick={handleLogout} className="btn btn-secondary">
-            Logout
+            🚪 Logout
           </button>
         </div>
       </div>
@@ -141,13 +141,13 @@ const Upload = () => {
             className={`tab ${uploadType === 'file' ? 'active' : ''}`}
             onClick={() => setUploadType('file')}
           >
-            Upload File
+            📄 Upload File
           </button>
           <button
             className={`tab ${uploadType === 'url' ? 'active' : ''}`}
             onClick={() => setUploadType('url')}
           >
-            Upload from URL
+            🌐 Upload from URL
           </button>
         </div>
 
@@ -182,7 +182,7 @@ const Upload = () => {
               className="btn btn-primary"
               disabled={loading || !file}
             >
-              {loading ? 'Uploading...' : 'Upload Document'}
+              {loading ? '⏳ Uploading...' : '🚀 Upload Document'}
             </button>
           </form>
         ) : (
@@ -203,14 +203,14 @@ const Upload = () => {
               className="btn btn-primary"
               disabled={loading || !url.trim()}
             >
-              {loading ? 'Processing...' : 'Upload from URL'}
+              {loading ? '⏳ Processing...' : '🚀 Upload from URL'}
             </button>
           </form>
         )}
       </div>
 
       <div className="documents-section">
-        <h3>Your Documents</h3>
+        <h3>📁 Your Documents</h3>
         {documents.length === 0 ? (
           <p className="empty-message">No documents uploaded yet.</p>
         ) : (
@@ -230,7 +230,7 @@ const Upload = () => {
                   onClick={() => handleDelete(doc.id)}
                   className="btn btn-danger"
                 >
-                  Delete
+                  🗑️ Delete
                 </button>
               </div>
             ))}
