@@ -1,0 +1,93 @@
+# ============================
+# OS & Editor Files
+# ============================
+.DS_Store
+Thumbs.db
+*.log
+
+.vscode/
+.idea/
+*.iml
+
+# ============================
+# Java / Spring Boot
+# ============================
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven / Gradle
+.mvn/
+!mvn/wrapper/maven-wrapper.jar
+mvnw
+mvnw.cmd
+.gradle/
+build/
+
+# ============================
+# Node / React
+# ============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+dist/
+build/
+
+# ============================
+# Environment Variables
+# ============================
+.env
+.env.local
+.env.production
+.env.development
+
+application-local.yml
+application-prod.yml
+
+# ============================
+# Secrets & Keys
+# ============================
+*.pem
+*.key
+*.crt
+*.keystore
+*.jks
+
+# ============================
+# Databases
+# ============================
+*.db
+*.sqlite
+*.sqlite3
+postgres-data/
+pgdata/
+
+# ============================
+# Docker
+# ============================
+docker-compose.override.yml
+
+# ============================
+# Uploads / Generated Files
+# ============================
+uploads/
+tmp/
+logs/
+
+# ============================
+# Test Reports
+# ============================
+coverage/
+*.lcov
+
+# ============================
+# Misc
+# ============================
+*.tmp
+*.bak
+*.swp
